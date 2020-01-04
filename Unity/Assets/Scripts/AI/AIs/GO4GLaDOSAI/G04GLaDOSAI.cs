@@ -10,11 +10,11 @@ public class G04GLaDOSAI : AIPlayer
 
 	/// <summary>
 	/// This method will be called before a match starts and is used for
-	/// instantiating a new <see cref="RandomAIThinker"/>.
+	/// instantiating a new <see cref="G04GLaDOSAIThinker"/>.
 	/// </summary>
 	/// <seealso cref="AIPlayer.Setup"/>
 	public override void Setup()
 	{
-		thinker = new RandomAIThinker();
+		thinker = new G04GLaDOSAIThinker();
 	}
 }
