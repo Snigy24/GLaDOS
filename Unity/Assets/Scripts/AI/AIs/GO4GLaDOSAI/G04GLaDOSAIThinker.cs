@@ -15,16 +15,23 @@ public class G04GLaDOSAIThinker : IThinker
 		random = new Random();
 	}
 
-	public FutureMove Think(Board board, int depth, int alpha, int beta, bool maximizingPlayer, CancellationToken ct)
+	public FutureMove Think(Board board, CancellationToken ct)
 	{
-		if (depth == 0 || board.CheckWinner() != Winner.None)
-			//return
 
-		if (maximizingPlayer)
-			{
-				board.
-				int maxEval = int.MinValue;
-				
-			}
+	}
+
+	private float Minimax(Board board, Pos pos, int depth, int alpha, int beta)
+	{
+		
+		if (depth == 0 || board.CheckWinner() != Winner.None)
+		{
+			//return
+		}
+
+		if (board.Turn == PColor.)
+		{
+			int maxEval = int.MinValue;
+
+		}
 	}
 }
