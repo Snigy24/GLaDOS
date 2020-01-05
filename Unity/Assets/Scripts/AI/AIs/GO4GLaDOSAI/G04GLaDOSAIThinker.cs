@@ -19,7 +19,6 @@ public class G04GLaDOSAIThinker : IThinker
 
 	public FutureMove Think(Board board, CancellationToken ct)
 	{
-		FutureMove futureMove = new FutureMove();
 		Move bestMove = new Move();
 		PColor playerColor = board.Turn;
 		PShape playerShape;
@@ -48,7 +47,7 @@ public class G04GLaDOSAIThinker : IThinker
 			bestMove = move;
 		}
 
-		futureMove = new FutureMove(row, bestMove.piece.shape);
+		FutureMove futureMove = new FutureMove(row, bestMove.piece.shape);
 		//Minimax(board, 3, int.MinValue + 1, int.MaxValue - 1, true, playerColor, ref move);
 		return futureMove;
 	}
@@ -120,16 +119,20 @@ public class G04GLaDOSAIThinker : IThinker
 		PShape playerShape;
 		if (playerColor == PColor.White) playerShape = PShape.Round;
 		else playerShape = PShape.Square;
+        int total = 0;
 		int count = 0;
 		foreach (IEnumerable<Pos> corridor in corridors)
 		{
+            count = 0;
 			foreach (Pos p in corridor)
 			{
+
 				if (!board[p.row, p.col].HasValue) continue;
 				Piece piece = board[p.row, p.col].Value;
-				if (board[p.row, p.col].HasValue && piece.Is(playerColor, playerShape)) count++;
-				else if (board[p.row, p.col].HasValue && !piece.Is(playerColor, playerShape)) count--;
+				if (board[p.row, p.col].HasValue && piece.Is(playerColor, playerShape)) count *= 2;
+				else if (board[p.row, p.col].HasValue && !piece.Is(playerColor, playerShape)) count /= 2;
 			}
+            total += count;
 		}
 		return count;
 	}
