@@ -28,7 +28,6 @@ public class G04GLaDOSAIThinker : IThinker
 
 		do
 		{
-			
 			lastCol++;
 			if (lastCol >= board.cols) lastCol = 0;
 			
@@ -67,6 +66,8 @@ public class G04GLaDOSAIThinker : IThinker
 			int maxEval = int.MinValue + 1;
 			for (int i = 0; i < board.cols; i++)
 			{
+				if (board.PieceCount(playerColor, shape) <= 0) break;
+				if (board.IsColumnFull(i)) continue;
 				board.DoMove(shape, i);
 				int eval = Minimax(board, depth - 1, alpha, beta, false, playerColor);
 				board.UndoMove();
@@ -77,6 +78,8 @@ public class G04GLaDOSAIThinker : IThinker
 			shape = PShape.Square;
 			for (int i = 0; i < board.cols; i++)
 			{
+				if (board.PieceCount(playerColor, shape) <= 0) break;
+				if (board.IsColumnFull(i)) continue;
 				board.DoMove(shape, i);
 				int eval = Minimax(board, depth - 1, alpha, beta, false, playerColor);
 				board.UndoMove();
@@ -92,6 +95,8 @@ public class G04GLaDOSAIThinker : IThinker
 			int minEval = int.MaxValue - 1;
 			for (int i = 0; i < board.cols; i++)
 			{
+				if (board.PieceCount(playerColor, shape) <= 0) break;
+				if (board.IsColumnFull(i)) continue;
 				board.DoMove(shape, i);
 				int eval = Minimax(board, depth - 1, alpha, beta, true, playerColor);
 				board.UndoMove();
@@ -103,6 +108,8 @@ public class G04GLaDOSAIThinker : IThinker
 			shape = PShape.Square;
 			for (int i = 0; i < board.cols; i++)
 			{
+				if (board.PieceCount(playerColor, shape) <= 0) break;
+				if (board.IsColumnFull(i)) continue;
 				board.DoMove(shape, i);
 				int eval = Minimax(board, depth - 1, alpha, beta, true, playerColor);
 				board.UndoMove();
@@ -134,6 +141,6 @@ public class G04GLaDOSAIThinker : IThinker
 			}
             total += count;
 		}
-		return count;
+		return total;
 	}
 }
