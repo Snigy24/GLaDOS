@@ -328,8 +328,8 @@ MonoBehaviour:
   pointsPerWin: 3
   pointsPerDraw: 1
   pointsPerLoss: 0
-  pressButtonBeforeMatch: 1
-  pressButtonAfterMatch: 1
+  pressButtonBeforeMatch: 0
+  pressButtonAfterMatch: 0
   unblockedScreenDuration: 1.5
 --- !u!4 &617695835
 Transform:
