@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
 
 public class G04GLaDOSAIThinker : IThinker
 {
 	// A random number generator instance
-	private Random random;
+	private System.Random random;
 
     PColor playerColor;
     PShape playerShape;
@@ -15,37 +16,37 @@ public class G04GLaDOSAIThinker : IThinker
     /// </summary>
     public G04GLaDOSAIThinker()
 	{
-		random = new Random();
+		random = new System.Random();
 	}
 
 	public FutureMove Think(Board board, CancellationToken ct)
 	{
 		Move bestMove = new Move();
         playerColor = board.Turn;
-        int bestScore = 0;
+        int bestScore = -1;
         SetPlayerShape();
         Move move;
         for (int i = 0; i < board.cols; i++)
         {
-            if (ct.IsCancellationRequested) return new FutureMove(bestMove.col, bestMove.piece.shape);
+            if (ct.IsCancellationRequested) return FutureMove.NoMove;
             if (board.IsColumnFull(i)) continue;
             if (board.PieceCount(playerColor, playerShape) <= 0) playerShape = PShape.Square;
-            board.DoMove(playerShape, i);
-            int score = Minimax(board, 3, int.MinValue + 1, int.MaxValue - 1, true, playerColor, ct);
+			board.DoMove(playerShape, i);
+            int score = Minimax(board, 2, int.MinValue + 1, int.MaxValue - 1, false, playerColor, ct);
             move = board.UndoMove();
-            if (score > bestScore)
+			if (score > bestScore)
             {
                 bestScore = score;
                 bestMove = move;
             }
-        }
-        return new FutureMove(random.Next(0, board.cols), bestMove.piece.shape);
+		}
+		return new FutureMove(bestMove.col, bestMove.piece.shape);
     }
 
 	private int Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer, PColor playerColor, CancellationToken ct)
 	{
         if (ct.IsCancellationRequested) return 0;
-        if (depth == 0 || board.CheckWinner() != Winner.None)
+        if (depth <= 0 || board.CheckWinner() != Winner.None)
 		{
 			int staticEvaluation = GetHeuristicValue(board.winCorridors, board, playerColor);
 			return staticEvaluation;
@@ -111,11 +112,11 @@ public class G04GLaDOSAIThinker : IThinker
 		}
 	}
 
-	private int GetHeuristicValue(IEnumerable<IEnumerable<Pos>> corridors, Board board, PColor playerColor)
+	private int GetHeuristicValue(IEnumerable<IEnumerable<Pos>> corridors, Board board, PColor _playerColor)
 	{
-		PShape playerShape;
-		if (playerColor == PColor.White) playerShape = PShape.Round;
-		else playerShape = PShape.Square;
+		PShape _playerShape;
+		if (_playerColor == PColor.White) _playerShape = PShape.Round;
+		else _playerShape = PShape.Square;
         int total = 0;
 		int count = 0;
 		foreach (IEnumerable<Pos> corridor in corridors)
@@ -126,8 +127,8 @@ public class G04GLaDOSAIThinker : IThinker
 
 				if (!board[p.row, p.col].HasValue) continue;
 				Piece piece = board[p.row, p.col].Value;
-				if (board[p.row, p.col].HasValue && piece.Is(playerColor, playerShape)) count *= 2;
-				else if (board[p.row, p.col].HasValue && !piece.Is(playerColor, playerShape)) count /= 2;
+				if (board[p.row, p.col].HasValue && piece.Is(_playerColor, _playerShape)) count *= 2;
+				else if (board[p.row, p.col].HasValue && !piece.Is(_playerColor, _playerShape)) count /= 2;
 			}
             total += count;
 		}
@@ -136,7 +137,10 @@ public class G04GLaDOSAIThinker : IThinker
 
     private void SetPlayerShape()
     {
-        if (playerColor == PColor.White) playerShape = PShape.Round;
-        else playerShape = PShape.Square;
+		if (playerColor == PColor.White) playerShape = PShape.Round;
+		else
+		{
+			playerShape = PShape.Square;
+		}
     }
 }
