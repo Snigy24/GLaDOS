@@ -10,21 +10,24 @@ public class G04GLaDOSAIThinker : IThinker
 
     private G04GLaDOSStaticEvaluation staticEvaluation;
 
+    private int depth;
+
     private PColor playerColor;
     private PShape playerShape;
 
-    private int alpha;
-    private int beta;
+    //private int alpha;
+    //private int beta;
     private int score;
 
     /// <summary>
     /// Create a new instance of G04GLaDOSAIThinker.
     /// </summary>
-    public G04GLaDOSAIThinker()
+    public G04GLaDOSAIThinker(int depth)
     {
         random = new System.Random();
         staticEvaluation = new G04GLaDOSStaticEvaluation();
         ResetAIVariables();
+        this.depth = depth;
 
     }
 
@@ -34,9 +37,31 @@ public class G04GLaDOSAIThinker : IThinker
         playerColor = board.Turn;
         ResetAIVariables();
         SetPlayerShape();
-        FutureMove futureMove = Minimax(board, 3, true, ct);
+        //FutureMove futureMove = Minimax(board, depth, int.MinValue + 1, int.MaxValue - 1, true, ct);
+        //Debug.LogWarning("Final Score: " + score);
+        //return futureMove;
+        Move move;
+        FutureMove bestMove = new FutureMove();
+        int bestScore = 0;
+        for (int i = 0; i < board.cols; i++)
+        {
+            if(ct.IsCancellationRequested) return FutureMove.NoMove;
+
+            if (board.IsColumnFull(i)) continue;
+
+            if (board.PieceCount(playerColor, playerShape) <= 0) playerShape = PShape.Square;
+
+            board.DoMove(playerShape, i);
+            FutureMove futureMove = Minimax(board, depth - 1, int.MinValue + 1, int.MaxValue - 1, false, ct);
+            move = board.UndoMove();
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestMove = new FutureMove(move.col, move.piece.shape);
+            }
+        }
         Debug.LogWarning("Final Score: " + score);
-        return futureMove;
+        return bestMove;
         //Move bestMove = new Move();
         //playerColor = board.Turn;
         //int bestScore = -1;
@@ -59,10 +84,10 @@ public class G04GLaDOSAIThinker : IThinker
         //return new FutureMove(bestMove.col, bestMove.piece.shape);
     }
 
-    private FutureMove Minimax(Board board, int depth, bool maximizingPlayer, CancellationToken ct)
+    private FutureMove Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer, CancellationToken ct)
     {
         if (ct.IsCancellationRequested) return FutureMove.NoMove;
-        Debug.LogError("Checking Score: " + score);
+
         if (depth <= 0 || board.CheckWinner() != Winner.None)
         {
             score = GetHeuristicValue(board.winCorridors, board);
@@ -79,13 +104,13 @@ public class G04GLaDOSAIThinker : IThinker
                 if (board.PieceCount(playerColor, shape) <= 0) break;
                 if (board.IsColumnFull(i)) continue;
                 board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, false, ct);
+                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
                 Move move = board.UndoMove();
                 maxEval = Math.Max(maxEval, score);
                 alpha = Math.Max(alpha, score);
                 if (beta <= alpha) break;
                 futureMove = new FutureMove(move.col, move.piece.shape);
-
+                if (ct.IsCancellationRequested) return FutureMove.NoMove;
             }
             shape = PShape.Square;
             for (int i = 0; i < board.cols; i++)
@@ -93,44 +118,53 @@ public class G04GLaDOSAIThinker : IThinker
                 if (board.PieceCount(playerColor, shape) <= 0) break;
                 if (board.IsColumnFull(i)) continue;
                 board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, false, ct);
+                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
                 Move move = board.UndoMove();
                 maxEval = Math.Max(maxEval, score);
                 alpha = Math.Max(alpha, score);
                 if (beta <= alpha) break;
                 futureMove = new FutureMove(move.col, move.piece.shape);
+                if (ct.IsCancellationRequested) return FutureMove.NoMove;
             }
             return futureMove;
         }
         else
         {
             FutureMove futureMove = new FutureMove();
+            PColor enemyColor;
+            if (playerColor == PColor.Red)
+            {
+                enemyColor = PColor.White;
+            }
+            else enemyColor = PColor.Red;
             PShape shape = PShape.Round;
             int minEval = int.MaxValue - 1;
             for (int i = 0; i < board.cols; i++)
             {
-                if (board.PieceCount(playerColor, shape) <= 0) break;
+                if (board.PieceCount(enemyColor, shape) <= 0) break;
                 if (board.IsColumnFull(i)) continue;
                 board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, false, ct);
+                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
                 Move move = board.UndoMove();
                 minEval = Math.Min(minEval, score);
                 beta = Math.Min(beta, score);
                 if (beta <= alpha) break;
                 futureMove = new FutureMove(move.col, move.piece.shape);
+                if (ct.IsCancellationRequested) return FutureMove.NoMove;
             }
             shape = PShape.Square;
             for (int i = 0; i < board.cols; i++)
             {
-                if (board.PieceCount(playerColor, shape) <= 0) break;
+                if (board.PieceCount(enemyColor, shape) <= 0) break;
                 if (board.IsColumnFull(i)) continue;
                 board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, false, ct);
+                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
                 Move move = board.UndoMove();
                 minEval = Math.Min(minEval, score);
                 beta = Math.Min(beta, score);
                 if (beta <= alpha) break;
                 futureMove = new FutureMove(move.col, move.piece.shape);
+                if (ct.IsCancellationRequested) return FutureMove.NoMove;
             }
             return futureMove;
         }
@@ -221,7 +255,8 @@ public class G04GLaDOSAIThinker : IThinker
         //    }
         //    total += count;
         //}
-        return random.Next(-10, 10);
+        //return total;
+        return random.Next(-100, 100);
     }
 
     private void SetPlayerShape()
@@ -235,8 +270,8 @@ public class G04GLaDOSAIThinker : IThinker
 
     private void ResetAIVariables()
     {
-        alpha = int.MinValue + 1;
-        beta = int.MaxValue - 1;
+        //alpha = int.MinValue + 1;
+        //beta = int.MaxValue - 1;
         score = -1;
     }
 }
