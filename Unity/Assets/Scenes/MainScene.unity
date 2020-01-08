@@ -318,7 +318,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rows: 7
-  cols: 7
+  cols: 20
   winSequence: 4
   roundPiecesPerPlayer: 10
   squarePiecesPerPlayer: 11
@@ -329,7 +329,7 @@ MonoBehaviour:
   pointsPerDraw: 1
   pointsPerLoss: 0
   pressButtonBeforeMatch: 0
-  pressButtonAfterMatch: 0
+  pressButtonAfterMatch: 1
   unblockedScreenDuration: 1.5
 --- !u!4 &617695835
 Transform:
@@ -357,7 +357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52622cd336e3e0ab69d66e893d84bd1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isActive: 1
+  isActive: 0
 --- !u!114 &617695837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -383,7 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af4d4e13f7b2fd18dace3aa6c650000e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isActive: 1
+  isActive: 0
 --- !u!114 &617695839
 MonoBehaviour:
   m_ObjectHideFlags: 0

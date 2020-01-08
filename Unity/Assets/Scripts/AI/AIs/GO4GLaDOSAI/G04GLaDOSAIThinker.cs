@@ -5,6 +5,19 @@ using UnityEngine;
 
 public class G04GLaDOSAIThinker : IThinker
 {
+	private struct NewMove
+	{
+		public int Score { get; }
+		public FutureMove Move { get; }
+
+		public NewMove(int score, FutureMove move)
+		{
+			Score = score;
+			Move = move;
+		}
+	}
+
+
     // A random number generator instance
     private System.Random random;
 
@@ -15,9 +28,8 @@ public class G04GLaDOSAIThinker : IThinker
     private PColor playerColor;
     private PShape playerShape;
 
-    //private int alpha;
-    //private int beta;
-    private int score;
+	private PColor enemyColor;
+	private PShape enemyShape;
 
     /// <summary>
     /// Create a new instance of G04GLaDOSAIThinker.
@@ -26,252 +38,102 @@ public class G04GLaDOSAIThinker : IThinker
     {
         random = new System.Random();
         staticEvaluation = new G04GLaDOSStaticEvaluation();
-        ResetAIVariables();
         this.depth = depth;
 
     }
 
     public FutureMove Think(Board board, CancellationToken ct)
     {
+		playerColor = board.Turn;
+		SetPlayerColorShape();
+		NewMove move = Minimax(board, depth, int.MinValue + 1, int.MaxValue - 1, true, ct);
+		FutureMove bestMove = move.Move;
+		return bestMove;
+	}
 
-        playerColor = board.Turn;
-        ResetAIVariables();
-        SetPlayerShape();
-        //FutureMove futureMove = Minimax(board, depth, int.MinValue + 1, int.MaxValue - 1, true, ct);
-        //Debug.LogWarning("Final Score: " + score);
-        //return futureMove;
-        Move move;
-        FutureMove bestMove = new FutureMove();
-        int bestScore = 0;
-        for (int i = 0; i < board.cols; i++)
-        {
-            if(ct.IsCancellationRequested) return FutureMove.NoMove;
-
-            if (board.IsColumnFull(i)) continue;
-
-            if (board.PieceCount(playerColor, playerShape) <= 0) playerShape = PShape.Square;
-
-            board.DoMove(playerShape, i);
-            FutureMove futureMove = Minimax(board, depth - 1, int.MinValue + 1, int.MaxValue - 1, false, ct);
-            move = board.UndoMove();
-            if (score > bestScore)
-            {
-                bestScore = score;
-                bestMove = new FutureMove(move.col, move.piece.shape);
-            }
-        }
-        Debug.LogWarning("Final Score: " + score);
-        return bestMove;
-        //Move bestMove = new Move();
-        //playerColor = board.Turn;
-        //int bestScore = -1;
-        //SetPlayerShape();
-        //Move move;
-        //for (int i = 0; i < board.cols; i++)
-        //{
-        //    if (ct.IsCancellationRequested) return FutureMove.NoMove;
-        //    if (board.IsColumnFull(i)) continue;
-        //    if (board.PieceCount(playerColor, playerShape) <= 0) playerShape = PShape.Square;
-        //    board.DoMove(playerShape, i);
-        //    FutureMove futureMove = Minimax(board, 2, false, ct);
-        //    move = board.UndoMove();
-        //    if (maxScore > bestScore)
-        //    {
-        //        bestScore = maxScore;
-        //        bestMove = move;
-        //    }
-        //}
-        //return new FutureMove(bestMove.col, bestMove.piece.shape);
-    }
-
-    private FutureMove Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer, CancellationToken ct)
+    private NewMove Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer, CancellationToken ct)
     {
-        if (ct.IsCancellationRequested) return FutureMove.NoMove;
+		if (ct.IsCancellationRequested) return new NewMove(0, FutureMove.NoMove);
 
-        if (depth <= 0 || board.CheckWinner() != Winner.None)
-        {
-            score = GetHeuristicValue(board.winCorridors, board);
-            return new FutureMove();
-        }
+		if (depth <= 0 || board.CheckWinner() != Winner.None)
+		{
+			int score = GetHeuristicValue(board.winCorridors, board);
+			return new NewMove(score, FutureMove.NoMove);
+		}
 
-        if (maximizingPlayer)
-        {
-            FutureMove futureMove = new FutureMove();
-            PShape shape = PShape.Round;
-            int maxEval = int.MinValue + 1;
-            for (int i = 0; i < board.cols; i++)
-            {
-                if (board.PieceCount(playerColor, shape) <= 0) break;
-                if (board.IsColumnFull(i)) continue;
-                board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
-                Move move = board.UndoMove();
-                maxEval = Math.Max(maxEval, score);
-                alpha = Math.Max(alpha, score);
-                if (beta <= alpha) break;
-                futureMove = new FutureMove(move.col, move.piece.shape);
-                if (ct.IsCancellationRequested) return FutureMove.NoMove;
-            }
-            shape = PShape.Square;
-            for (int i = 0; i < board.cols; i++)
-            {
-                if (board.PieceCount(playerColor, shape) <= 0) break;
-                if (board.IsColumnFull(i)) continue;
-                board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
-                Move move = board.UndoMove();
-                maxEval = Math.Max(maxEval, score);
-                alpha = Math.Max(alpha, score);
-                if (beta <= alpha) break;
-                futureMove = new FutureMove(move.col, move.piece.shape);
-                if (ct.IsCancellationRequested) return FutureMove.NoMove;
-            }
-            return futureMove;
-        }
-        else
-        {
-            FutureMove futureMove = new FutureMove();
-            PColor enemyColor;
-            if (playerColor == PColor.Red)
-            {
-                enemyColor = PColor.White;
-            }
-            else enemyColor = PColor.Red;
-            PShape shape = PShape.Round;
-            int minEval = int.MaxValue - 1;
-            for (int i = 0; i < board.cols; i++)
-            {
-                if (board.PieceCount(enemyColor, shape) <= 0) break;
-                if (board.IsColumnFull(i)) continue;
-                board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
-                Move move = board.UndoMove();
-                minEval = Math.Min(minEval, score);
-                beta = Math.Min(beta, score);
-                if (beta <= alpha) break;
-                futureMove = new FutureMove(move.col, move.piece.shape);
-                if (ct.IsCancellationRequested) return FutureMove.NoMove;
-            }
-            shape = PShape.Square;
-            for (int i = 0; i < board.cols; i++)
-            {
-                if (board.PieceCount(enemyColor, shape) <= 0) break;
-                if (board.IsColumnFull(i)) continue;
-                board.DoMove(shape, i);
-                futureMove = Minimax(board, depth - 1, alpha, beta, false, ct);
-                Move move = board.UndoMove();
-                minEval = Math.Min(minEval, score);
-                beta = Math.Min(beta, score);
-                if (beta <= alpha) break;
-                futureMove = new FutureMove(move.col, move.piece.shape);
-                if (ct.IsCancellationRequested) return FutureMove.NoMove;
-            }
-            return futureMove;
-        }
-
-        //      if (ct.IsCancellationRequested) return 0;
-        //      if (depth <= 0 || board.CheckWinner() != Winner.None)
-        //{
-        //	int staticEvaluation = GetHeuristicValue(board.winCorridors, board, playerColor);
-        //	return staticEvaluation;
-        //}
-        //if (maximizingPlayer)
-        //{
-        //	PShape shape = PShape.Round;
-        //	int maxEval = int.MinValue + 1;
-        //	for (int i = 0; i < board.cols; i++)
-        //	{
-        //		if (board.PieceCount(playerColor, shape) <= 0) break;
-        //		if (board.IsColumnFull(i)) continue;
-        //		board.DoMove(shape, i);
-        //		int eval = Minimax(board, depth - 1, alpha, beta, false, playerColor, ct);
-        //		board.UndoMove();
-        //		maxEval = Math.Max(maxEval, eval);
-        //		alpha = Math.Max(alpha, eval);
-        //		if (beta <= alpha) break;
-        //	}
-        //	shape = PShape.Square;
-        //	for (int i = 0; i < board.cols; i++)
-        //	{
-        //		if (board.PieceCount(playerColor, shape) <= 0) break;
-        //		if (board.IsColumnFull(i)) continue;
-        //		board.DoMove(shape, i);
-        //		int eval = Minimax(board, depth - 1, alpha, beta, false, playerColor, ct);
-        //		board.UndoMove();
-        //		maxEval = Math.Max(maxEval, eval);
-        //		alpha = Math.Max(alpha, eval);
-        //		if (beta <= alpha) break;
-        //	}
-        //	return maxEval;
-        //}
-        //else
-        //{
-        //	PShape shape = PShape.Round;
-        //	int minEval = int.MaxValue - 1;
-        //	for (int i = 0; i < board.cols; i++)
-        //	{
-        //		if (board.PieceCount(playerColor, shape) <= 0) break;
-        //		if (board.IsColumnFull(i)) continue;
-        //		board.DoMove(shape, i);
-        //		int eval = Minimax(board, depth - 1, alpha, beta, true, playerColor, ct);
-        //		board.UndoMove();
-        //		minEval = Math.Min(minEval, eval);
-        //		beta = Math.Min(beta, eval);
-        //		if (beta <= alpha) break;
-
-        //	}
-        //	shape = PShape.Square;
-        //	for (int i = 0; i < board.cols; i++)
-        //	{
-        //		if (board.PieceCount(playerColor, shape) <= 0) break;
-        //		if (board.IsColumnFull(i)) continue;
-        //		board.DoMove(shape, i);
-        //		int eval = Minimax(board, depth - 1, alpha, beta, true, playerColor, ct);
-        //		board.UndoMove();
-        //		minEval = Math.Min(minEval, eval);
-        //		beta = Math.Min(beta, eval);
-        //		if (beta <= alpha) break;
-        //	}
-        //	return minEval;
-        //}
+		if (maximizingPlayer)
+		{
+			if (board.PieceCount(playerColor, playerShape) <= 0)
+			{
+				playerShape = playerShape == PShape.Round ? PShape.Square : PShape.Round;
+			}
+			else SetPlayerColorShape();
+			int bestScore = 0;
+			FutureMove bestMove = new FutureMove();
+			int maxEval = int.MinValue + 1;
+			for (int i = 0; i < board.rows; i++)
+			{
+				board.DoMove(playerShape, i);
+				NewMove move = Minimax(board, depth - 1, alpha, beta, false, ct);
+				Move lastMove = board.UndoMove();
+				maxEval = Math.Max(maxEval, move.Score);
+				alpha = Math.Max(alpha, move.Score);
+				if (beta <= alpha) break;
+				if (move.Score > bestScore)
+				{
+					bestScore = move.Score;
+					bestMove = new FutureMove(lastMove.col, lastMove.piece.shape);
+				}
+			}
+			return new NewMove(bestScore, bestMove);
+		}
+		else
+		{
+			if (board.PieceCount(enemyColor, enemyShape) <= 0)
+			{
+				enemyShape = enemyShape == PShape.Round ? PShape.Square : PShape.Round;
+			}
+			else SetPlayerColorShape();
+			int bestScore = 0;
+			FutureMove bestMove = new FutureMove();
+			int minEval = int.MaxValue - 1;
+			for (int i = 0; i < board.rows; i++)
+			{
+				board.DoMove(enemyShape, i);
+				NewMove move = Minimax(board, depth - 1, alpha, beta, false, ct);
+				Move lastMove = board.UndoMove();
+				minEval = Math.Min(minEval, move.Score);
+				beta = Math.Min(beta, move.Score);
+				if (beta <= alpha) break;
+				if (move.Score > bestScore)
+				{
+					bestScore = move.Score;
+					bestMove = new FutureMove(lastMove.col, lastMove.piece.shape);
+				}
+			}
+			return new NewMove(bestScore, bestMove);
+		}
     }
 
     private int GetHeuristicValue(IEnumerable<IEnumerable<Pos>> corridors, Board board)
     {
-        //if (playerColor == PColor.White) playerShape = PShape.Round;
-        //else playerShape = PShape.Square;
-        //int total = 0;
-        //int count;
-        //foreach (IEnumerable<Pos> corridor in corridors)
-        //{
-        //    count = 0;
-        //    foreach (Pos p in corridor)
-        //    {
-
-        //        if (!board[p.row, p.col].HasValue) continue;
-        //        Piece piece = board[p.row, p.col].Value;
-        //        if (board[p.row, p.col].HasValue && piece.Is(playerColor, playerShape)) count *= 2;
-        //        else if (board[p.row, p.col].HasValue && !piece.Is(playerColor, playerShape)) count /= 2;
-        //    }
-        //    total += count;
-        //}
-        //return total;
-        return random.Next(-100, 100);
+        return random.Next(-10, 10);
     }
 
-    private void SetPlayerShape()
+    private void SetPlayerColorShape()
     {
-        if (playerColor == PColor.White) playerShape = PShape.Round;
-        else
-        {
-            playerShape = PShape.Square;
-        }
-    }
 
-    private void ResetAIVariables()
-    {
-        //alpha = int.MinValue + 1;
-        //beta = int.MaxValue - 1;
-        score = -1;
+		if (playerColor == PColor.White)
+		{
+			playerShape = PShape.Round;
+			enemyColor = PColor.Red;
+			enemyShape = PShape.Square;
+		}
+		else
+		{
+			playerShape = PShape.Square;
+			enemyColor = PColor.White;
+			enemyShape = PShape.Round;
+		}
     }
 }
