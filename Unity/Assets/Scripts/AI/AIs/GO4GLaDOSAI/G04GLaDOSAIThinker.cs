@@ -5,18 +5,6 @@ using UnityEngine;
 
 public class G04GLaDOSAIThinker : IThinker
 {
-	private struct NewMove
-	{
-		public int Score { get; }
-		public FutureMove Move { get; }
-
-		public NewMove(int score, FutureMove move)
-		{
-			Score = score;
-			Move = move;
-		}
-	}
-
 
     // A random number generator instance
     private System.Random random;
@@ -46,78 +34,96 @@ public class G04GLaDOSAIThinker : IThinker
     {
 		playerColor = board.Turn;
 		SetPlayerColorShape();
-		NewMove move = Minimax(board, depth, int.MinValue + 1, int.MaxValue - 1, true, ct);
-		FutureMove bestMove = move.Move;
+		int bestScore = int.MinValue + 1;
+		FutureMove bestMove = new FutureMove();
+		for (int i = 0; i < board.cols; i++)
+		{
+			if (ct.IsCancellationRequested) return FutureMove.NoMove;
+
+			if (board.PieceCount(playerColor, playerShape) < 1)
+			{
+				playerShape = playerShape == PShape.Round ? PShape.Square : PShape.Round;
+			}
+
+			if (board.IsColumnFull(i)) continue;
+
+			board.DoMove(playerShape, i);
+			board.Copy();
+			int score = Minimax(board.Copy(), depth - 1, int.MinValue + 1, int.MaxValue - 1, false, ct);
+			board.UndoMove();
+			if (score > bestScore)
+			{
+				bestScore = score;
+				bestMove = new FutureMove(i, playerShape);
+			}
+		}
 		return bestMove;
 	}
 
-    private NewMove Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer, CancellationToken ct)
+    private int Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer, CancellationToken ct)
     {
-		if (ct.IsCancellationRequested) return new NewMove(0, FutureMove.NoMove);
+		if (ct.IsCancellationRequested) return 0;
 
 		if (depth <= 0 || board.CheckWinner() != Winner.None)
 		{
-			int score = GetHeuristicValue(board.winCorridors, board);
-			return new NewMove(score, FutureMove.NoMove);
+			if ((board.CheckWinner() == Winner.White && playerColor == PColor.White) || (board.CheckWinner() == Winner.Red && playerColor == PColor.Red))
+			{
+				return 1000;
+			}
+			else if ((board.CheckWinner() == Winner.White && enemyColor == PColor.White) || (board.CheckWinner() == Winner.Red && enemyColor == PColor.Red))
+			{
+				return -1000;
+			}
+			else if (board.CheckWinner() == Winner.Draw)
+			{
+				return -500;
+			}
+
+			return staticEvaluation.GetHeuristicValue(board.winCorridors, board, playerColor, playerShape);
 		}
 
 		if (maximizingPlayer)
 		{
-			if (board.PieceCount(playerColor, playerShape) <= 0)
-			{
-				playerShape = playerShape == PShape.Round ? PShape.Square : PShape.Round;
-			}
-			else SetPlayerColorShape();
-			int bestScore = 0;
-			FutureMove bestMove = new FutureMove();
 			int maxEval = int.MinValue + 1;
-			for (int i = 0; i < board.rows; i++)
+			for (int i = 0; i < board.cols; i++)
 			{
-				board.DoMove(playerShape, i);
-				NewMove move = Minimax(board, depth - 1, alpha, beta, false, ct);
-				Move lastMove = board.UndoMove();
-				maxEval = Math.Max(maxEval, move.Score);
-				alpha = Math.Max(alpha, move.Score);
-				if (beta <= alpha) break;
-				if (move.Score > bestScore)
+				if (board.PieceCount(playerColor, playerShape) < 1)
 				{
-					bestScore = move.Score;
-					bestMove = new FutureMove(lastMove.col, lastMove.piece.shape);
+					break;
 				}
+
+				if (board.IsColumnFull(i)) continue;
+
+				board.DoMove(playerShape, i);
+				int score = Minimax(board.Copy(), depth - 1, alpha, beta, false, ct);
+				Move lastMove = board.UndoMove();
+				maxEval = Math.Max(maxEval, score);
+				alpha = Math.Max(alpha, score);
+				if (beta <= alpha) break;
 			}
-			return new NewMove(bestScore, bestMove);
+			return maxEval;
 		}
 		else
 		{
-			if (board.PieceCount(enemyColor, enemyShape) <= 0)
-			{
-				enemyShape = enemyShape == PShape.Round ? PShape.Square : PShape.Round;
-			}
-			else SetPlayerColorShape();
-			int bestScore = 0;
-			FutureMove bestMove = new FutureMove();
 			int minEval = int.MaxValue - 1;
-			for (int i = 0; i < board.rows; i++)
+			for (int i = 0; i < board.cols; i++)
 			{
-				board.DoMove(enemyShape, i);
-				NewMove move = Minimax(board, depth - 1, alpha, beta, false, ct);
-				Move lastMove = board.UndoMove();
-				minEval = Math.Min(minEval, move.Score);
-				beta = Math.Min(beta, move.Score);
-				if (beta <= alpha) break;
-				if (move.Score > bestScore)
+				if (board.PieceCount(enemyColor, enemyShape) < 1)
 				{
-					bestScore = move.Score;
-					bestMove = new FutureMove(lastMove.col, lastMove.piece.shape);
+					break;
 				}
-			}
-			return new NewMove(bestScore, bestMove);
-		}
-    }
 
-    private int GetHeuristicValue(IEnumerable<IEnumerable<Pos>> corridors, Board board)
-    {
-        return random.Next(-10, 10);
+				if (board.IsColumnFull(i)) continue;
+
+				board.DoMove(enemyShape, i);
+				int score = Minimax(board.Copy(), depth - 1, alpha, beta, false, ct);
+				Move lastMove = board.UndoMove();
+				minEval = Math.Min(minEval, score);
+				beta = Math.Min(beta, score);
+				if (beta <= alpha) break;
+			}
+			return minEval;
+		}
     }
 
     private void SetPlayerColorShape()
