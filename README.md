@@ -205,10 +205,9 @@ Description of the developed solution, namely the implemented algorithm and the 
 Descrição da solução
 
 Para a nossa implementação de *Artificial Inteligence* no projecto *ColorShapeLinks AI*,
- utilizamos o algoritmo *Minimax* que é responsavel para avaliar as jogadas 
-possiveis e retornar a melhor opção para a nossa *AI*. Devido a isso, foi criado
- duas classes *G04GLaDOSAI* que herda da classe *AIPlayer* e *G04GLaDOSAIThinker*
- que implementa a interface *IThinker*.
+ utilizamos o algoritmo *Minimax* (*Ver secção Minimax para mais detalhes*) 
+que é responsavel para avaliar as jogadas possiveis e retornar a melhor opção para 
+a nossa *AI*. Devido a isso, foi criado duas classes *G04GLaDOSAI* que herda da classe *AIPlayer* e *G04GLaDOSAIThinker* que implementa a interface *IThinker*.
 
 
 Referente a classe *G04GLaDOSAI*, esta classe pertimite que a nossa *AI* (GLaDOS) 
@@ -218,7 +217,32 @@ Esta classe implementa a propriedade *PlayerName* que indica que a nossa *AI* d�
 o nome de GLaDOS e a propriedade *Thinker* que retorna uma instância da classe 
 que implementa *IThinker*.
 
-Já na classe *G04GLaDOSAIThinker* é onde se encontra implementado o algoritmo Mçinimax com cortes alfa e beta. 
+Já na classe *G04GLaDOSAIThinker* é onde se encontra implementado o algoritmo 
+Minimax com cortes alfa e beta, para poder verificar qual é a melhor e proxima jogada que 
+a nossa *AI* irá efectuar. 
+Existe variaveis para poder indicar a profundidade de procura máxima, as cores e
+ formas de cada jogador(AI ou oponente) e uma instãncia para poder usar a 
+heuristica que se encontra noutra classe.
+*ver secção função de avaliação estática para mais detalhes*.
+
+Utilizando o método `G04GLaDOSAIThinker(int depth)`, a nossa *AI* pecorre todas 
+as jogadas inicias e chama o método minimax em cada uma, para poder verificar qual 
+e é a melhor jogada dependo do score retornado. 
+	
+
+O `Think(Board board, CancellationToken ct)`, escolhe a melhor 
+jogada para a nossa AI. Este método começa por passar uma cópia do estado do tabuleiro
+e verifica qual é a forma e cor do adversário juntamente com a própria cor e forma.
+
+Para iniciação da verificação de qual a melhor jogada é criado uma variável que
+ indica e guarda o melhor score até a data. De seguida entra num ciclo `for`, 
+que permite pecorrer todas as colunas do tabuleiro em busca do melhor score. Devido a isso 
+o ciclo inicia fazendo algumas verificações, se excedeu o tempo que tem para efectuar a jogada, se 
+ainda tem uma determinada peça e ignora as colunas que já se encontram cheias. Após a "aprovação" 
+das verificações mencionadas acima, é testado uma jogada e chama-se o método que contem o 
+*Minimax* para efectuar a validação do *score*. Após termos o *score* desfaz-se a jogada
+e caso esse *score* seja melhor que o actual, guarda-se o novo *score*, caso contrário não é alterado.
+Antes do tempo finalizar ou ser efectuada a verificação das colunas o método retorna a melhor jogada.
 
 
 
