@@ -298,7 +298,6 @@ GameObject:
   - component: {fileID: 617695837}
   - component: {fileID: 617695838}
   - component: {fileID: 617695840}
-  - component: {fileID: 617695841}
   m_Layer: 0
   m_Name: SessionConfiguration
   m_TagString: Untagged
@@ -318,13 +317,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 505a1c9a208273b9c9f96cff93c38eb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rows: 10
-  cols: 10
+  rows: 7
+  cols: 7
   winSequence: 4
   roundPiecesPerPlayer: 10
   squarePiecesPerPlayer: 11
   lastMoveAnimLength: 1
-  aITimeLimit: 5
+  aITimeLimit: 0.2
   minAIGameMoveTime: 0.5
   pointsPerWin: 3
   pointsPerDraw: 1
@@ -358,7 +357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52622cd336e3e0ab69d66e893d84bd1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isActive: 1
+  isActive: 0
 --- !u!114 &617695837
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -384,7 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af4d4e13f7b2fd18dace3aa6c650000e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isActive: 1
+  isActive: 0
 --- !u!114 &617695839
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,19 +410,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isActive: 1
   searchDepth: 2
---- !u!114 &617695841
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 617695833}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 694608a98ed172d46a38c66c7f67646c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isActive: 1
 --- !u!1 &1037412112
 GameObject:
   m_ObjectHideFlags: 0

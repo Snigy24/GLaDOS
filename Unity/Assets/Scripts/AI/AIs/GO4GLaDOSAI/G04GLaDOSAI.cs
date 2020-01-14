@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 public class G04GLaDOSAI : AIPlayer
 {
-	public override string PlayerName => "GLaDOSAI";
+	public override string PlayerName => "GLaDOS";
 
 	public override IThinker Thinker => thinker;
 
