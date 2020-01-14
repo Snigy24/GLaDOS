@@ -193,3 +193,33 @@ Instituição:
 [ART2]:http://udspace.udel.edu/handle/19716/299
 [ART3]:https://www.tandfonline.com/doi/full/10.1057/jos.2010.14?casa_token=D3XtqIzBk7IAAAAA%3AoRD5pRk6fi8-pgD58AURxXv4CXDPAPDBHk_LEq2wmTo_02JJ6cx-Yqvng7MQ0RI44hlLLS7GeWcN8N0&
 [ART4]:https://arxiv.org/abs/1303.4692
+
+
+
+Description of the developed solution, namely the implemented algorithm and the chosen static evaluation function (heuristic).
+
+    Diagrams or schemes that aid, enhance and/or simplify the description will have positive influence in the final grade.
+
+
+
+Descrição da solução
+
+Para a nossa implementação de *Artificial Inteligence* no projecto *ColorShapeLinks AI*,
+ utilizamos o algoritmo *Minimax* que é responsavel para avaliar as jogadas 
+possiveis e retornar a melhor opção para a nossa *AI*. Devido a isso, foi criado
+ duas classes *G04GLaDOSAI* que herda da classe *AIPlayer* e *G04GLaDOSAIThinker*
+ que implementa a interface *IThinker*.
+
+
+Referente a classe *G04GLaDOSAI*, esta classe pertimite que a nossa *AI* (GLaDOS) 
+seja encontrada no jogo, de modo a competir contra um jogador ou outra *AI*. Isto
+ é essencial viso que este projecto tem como finalidade correr apenas no editor. 
+Esta classe implementa a propriedade *PlayerName* que indica que a nossa *AI* dá 
+o nome de GLaDOS e a propriedade *Thinker* que retorna uma instância da classe 
+que implementa *IThinker*.
+
+Já na classe *G04GLaDOSAIThinker* é onde se encontra implementado o algoritmo Mçinimax com cortes alfa e beta. 
+
+
+
+
